@@ -8,6 +8,11 @@ variable "build_subnet_id" {
   type        = string
 }
 
+variable "build_subnet_arn" {
+  description = "The ARN of the subnet for the build resources"
+  type        = string
+}
+
 variable "build_sg_id" {
   description = "The ID of the security group for the build resources"
   type        = string
