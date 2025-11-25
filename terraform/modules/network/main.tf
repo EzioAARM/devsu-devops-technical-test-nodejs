@@ -26,10 +26,20 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-resource "aws_subnet" "private_subnet" {
+resource "aws_subnet" "public_subnet_2" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = "10.0.3.0/24"
-  availability_zone = "us-east-1a"
+  availability_zone = "us-east-1b"
+  tags = {
+    Name        = "Public Subnet"
+    Environment = var.environment
+  }
+}
+
+resource "aws_subnet" "private_subnet" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "us-east-1c"
   tags = {
     Name        = "Private Subnet"
     Environment = var.environment
@@ -60,6 +70,24 @@ resource "aws_route" "public_rt" {
 resource "aws_route_table_association" "public_rt_assoc" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table" "public_rt_2" {
+  vpc_id = aws_vpc.vpc.id
+  tags = {
+    Name        = "Public Route Table"
+    Environment = var.environment
+  }
+}
+
+resource "aws_route" "public_rt_2" {
+  route_table_id         = aws_route_table.public_rt_2.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.igw.id
+}
+resource "aws_route_table_association" "public_rt_assoc_2" {
+  subnet_id      = aws_subnet.public_subnet_2.id
+  route_table_id = aws_route_table.public_rt_2.id
 }
 
 resource "aws_eip" "nat_eip" {

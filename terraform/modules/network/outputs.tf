@@ -13,6 +13,11 @@ output "public_subnet_arn" {
   description = "The ARN of the public subnet"
 }
 
+output "public_subnet_2_arn" {
+  value       = aws_subnet.public_subnet_2.arn
+  description = "The ARN of the second public subnet"
+}
+
 output "private_subnet_id" {
   value       = aws_subnet.private_subnet.id
   description = "The ID of the private subnet"

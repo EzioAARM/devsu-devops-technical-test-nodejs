@@ -39,6 +39,18 @@ module "network" {
   environment = each.value.environment
 }
 
+module "devsu" {
+  source   = "./modules/devsu"
+  for_each = local.environments
+
+  project_name = "devsu-${each.value.environment}"
+  environment  = each.value.environment
+  subnets = [
+    module.network[each.value.environment].public_subnet_arn,
+    module.network[each.value.environment].public_subnet_2_arn
+  ]
+}
+
 module "pipelines" {
   source   = "./modules/pipelines"
   for_each = local.environments
