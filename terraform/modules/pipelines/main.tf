@@ -134,6 +134,11 @@ resource "aws_codepipeline" "codepipeline" {
           includes = [var.github_branch]
         }
       }
+      pull_request {
+        branches {
+          includes = [var.github_branch]
+        }
+      }
     }
   }
 
