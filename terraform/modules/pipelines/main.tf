@@ -135,6 +135,7 @@ resource "aws_codepipeline" "codepipeline" {
         }
       }
       pull_request {
+        events = ["OPEN", "UPDATED", "CLOSED"]
         branches {
           includes = [var.github_branch]
         }
