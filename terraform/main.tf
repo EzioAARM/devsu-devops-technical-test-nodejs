@@ -27,7 +27,7 @@ resource "aws_codestarconnections_connection" "personal-github-connection" {
 
 locals {
   environments = {
-    dev  = { environment = "dev", branch = "develop" }
+    # dev  = { environment = "dev", branch = "develop" }
     prod = { environment = "prod", branch = "main" }
   }
 }
