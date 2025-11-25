@@ -5,6 +5,7 @@ phases:
         runtime-versions:
             nodejs: 18
         commands:
+            - cd app
             - echo Installing source NPM dependencies...
             - npm install
     pre_build:
