@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "codeconnections:UseConnection"
+      "codestar-connections:UseConnection"
     ]
     resources = [var.codestar_connection_arn]
   }
@@ -116,19 +116,32 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 }
 
 resource "aws_codepipeline" "codepipeline" {
-  name     = "codepipeline-${var.environment}"
-  role_arn = aws_iam_role.codepipeline_role.arn
+  name          = "codepipeline-${var.environment}"
+  role_arn      = aws_iam_role.codepipeline_role.arn
+  pipeline_type = "V2"
 
   artifact_store {
     location = var.build_bucket_name
     type     = "S3"
   }
 
+  trigger {
+    provider_type = "CodeStarSourceConnection"
+    git_configuration {
+      source_action_name = "GitSource"
+      push {
+        branches {
+          includes = [var.github_branch]
+        }
+      }
+    }
+  }
+
   stage {
     name = "Source"
 
     action {
-      name             = "Source"
+      name             = "GitSource"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeStarSourceConnection"

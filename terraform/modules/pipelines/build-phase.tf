@@ -41,6 +41,7 @@ data "aws_iam_policy_document" "build_phase_role_policy_document" {
       "ec2:DescribeSubnets",
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeVpcs",
+      "ec2:RunInstances"
     ]
 
     resources = ["*"]
@@ -58,7 +59,7 @@ data "aws_iam_policy_document" "build_phase_role_policy_document" {
       variable = "ec2:Subnet"
 
       values = [
-        var.build_subnet_id,
+        var.build_subnet_arn,
       ]
     }
 

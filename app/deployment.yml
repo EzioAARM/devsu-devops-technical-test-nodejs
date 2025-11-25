@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: devsu-devops-technical-test-nodejs-deployment
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: devsu-devops-technical-test-nodejs
+    template:
+        metadata:
+            labels:
+                app: devsu-devops-technical-test-nodejs
+        spec:
+            containers:
+                - name: devsu-devops-technical-test-nodejs-container
+                  image: 875649895777.dkr.ecr.us-east-1.amazonaws.com/devsu-project-repo-devsu-prod/devsu-devops-technical-test-nodejs:latest
+                  ports:
+                      - containerPort: 8000
