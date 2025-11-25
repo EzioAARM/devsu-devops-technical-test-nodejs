@@ -16,7 +16,7 @@ resource "aws_iam_role" "build_role" {
   assume_role_policy = data.aws_iam_policy_document.build_assume_role.json
 }
 
-data "aws_iam_policy_document" "build_role_policy" {
+data "aws_iam_policy_document" "build_role_policy_document" {
   statement {
     effect = "Allow"
 
@@ -46,16 +46,18 @@ data "aws_iam_policy_document" "build_role_policy" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = ["ec2:CreateNetworkInterfacePermission"]
-    resources = ["arn:aws:ec2:us-east-1:123456789012:network-interface/*"]
+    effect = "Allow"
+    actions = [
+      "ec2:CreateNetworkInterfacePermission"
+    ]
+    resources = ["*"]
 
     condition {
       test     = "StringEquals"
       variable = "ec2:Subnet"
 
       values = [
-        var.build_subnet_arn,
+        var.build_subnet_id,
       ]
     }
 
@@ -67,8 +69,10 @@ data "aws_iam_policy_document" "build_role_policy" {
   }
 
   statement {
-    effect  = "Allow"
-    actions = ["s3:*"]
+    effect = "Allow"
+    actions = [
+      "s3:*"
+    ]
     resources = [
       var.build_bucket_arn,
       "${var.build_bucket_arn}/*",
@@ -85,15 +89,22 @@ data "aws_iam_policy_document" "build_role_policy" {
   }
 }
 
-resource "aws_iam_role_policy" "build_role_policy" {
+resource "aws_iam_role_policy" "_document" {
   name   = "build_role_policy-${var.environment}"
   role   = aws_iam_role.build_role.id
-  policy = data.aws_iam_policy_document.build_role_policy.json
+  policy = data.aws_iam_policy_document.build_role_policy_document.json
 }
 
 resource "aws_iam_role" "codebuild_role" {
   name               = "codebuild_role-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.build_assume_role.json
+}
+
+# Attach the build policy to the codebuild_role
+resource "aws_iam_role_policy" "codebuild_role_policy" {
+  name   = "codebuild_role_policy-${var.environment}"
+  role   = aws_iam_role.codebuild_role.id
+  policy = data.aws_iam_policy_document.build_role_policy_document.json
 }
 
 # CodePipeline assume role policy
@@ -251,7 +262,7 @@ resource "aws_codebuild_project" "build_project" {
     vpc_id = var.vpc_id
 
     subnets = [
-      var.build_subnet_arn
+      var.build_subnet_id
     ]
 
     security_group_ids = [
@@ -305,7 +316,7 @@ resource "aws_codepipeline" "codepipeline" {
       version          = "1"
 
       configuration = {
-        ProjectName = "build_project-${var.environment}"
+        ProjectName = aws_codebuild_project.build_project.name
       }
     }
   }

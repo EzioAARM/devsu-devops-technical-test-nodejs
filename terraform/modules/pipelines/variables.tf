@@ -3,8 +3,8 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "build_subnet_arn" {
-  description = "The ARN of the subnet for the build resources"
+variable "build_subnet_id" {
+  description = "The ID of the subnet for the build resources"
   type        = string
 }
 

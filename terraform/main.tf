@@ -45,9 +45,10 @@ module "devsu" {
 
   project_name = "devsu-${each.value.environment}"
   environment  = each.value.environment
+
   subnets = [
-    module.network[each.value.environment].public_subnet_arn,
-    module.network[each.value.environment].public_subnet_2_arn
+    module.network[each.value.environment].public_subnet_id,
+    module.network[each.value.environment].public_subnet_2_id
   ]
 }
 
@@ -56,7 +57,7 @@ module "pipelines" {
   for_each = local.environments
 
   vpc_id                  = module.network[each.value.environment].vpc_id
-  build_subnet_arn        = module.network[each.value.environment].build_subnet_arn
+  build_subnet_id         = module.network[each.value.environment].build_subnet_id
   build_sg_id             = module.network[each.value.environment].build_sg_id
   build_bucket_name       = aws_s3_bucket.build_bucket.bucket
   build_bucket_arn        = aws_s3_bucket.build_bucket.arn
