@@ -1,5 +1,6 @@
 import sequelize from "./shared/database/database.js";
 import { usersRouter } from "./users/router.js";
+import { healthRouter } from "./health/router.js";
 import express from "express";
 
 const app = express();
@@ -11,6 +12,7 @@ if (process.env.NODE_ENV !== "test") {
 
 app.use(express.json());
 app.use("/api/users", usersRouter);
+app.use("/health", healthRouter);
 
 const server = app.listen(PORT, () => {
     console.log("Server running on port PORT", PORT);
