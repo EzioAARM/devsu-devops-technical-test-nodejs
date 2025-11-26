@@ -1,0 +1,8 @@
+awsEcrImageUrl: 875649895777.dkr.ecr.us-east-1.amazonaws.com/devsu-project-repo-devsu-prod:dev
+nodeEnv: development
+replicaCount: 1
+containerPort: 8000
+database:
+    name: devsu_dbda
+    user: admin
+    password: password123

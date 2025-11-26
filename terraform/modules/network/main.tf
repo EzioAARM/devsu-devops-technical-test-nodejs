@@ -17,22 +17,26 @@ resource "aws_subnet" "build_subnet" {
 }
 
 resource "aws_subnet" "public_subnet" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1a"
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
   tags = {
-    Name        = "Public Subnet"
-    Environment = var.environment
+    Name                     = "Public Subnet"
+    "kubernetes.io/role/elb" = "1"
+    Environment              = var.environment
   }
 }
 
 resource "aws_subnet" "public_subnet_2" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.3.0/24"
-  availability_zone = "us-east-1b"
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = "10.0.3.0/24"
+  availability_zone       = "us-east-1b"
+  map_public_ip_on_launch = true
   tags = {
-    Name        = "Public Subnet"
-    Environment = var.environment
+    Name                     = "Public Subnet"
+    "kubernetes.io/role/elb" = "1"
+    Environment              = var.environment
   }
 }
 
@@ -41,8 +45,9 @@ resource "aws_subnet" "private_subnet" {
   cidr_block        = "10.0.4.0/24"
   availability_zone = "us-east-1c"
   tags = {
-    Name        = "Private Subnet"
-    Environment = var.environment
+    Name                              = "Private Subnet"
+    "kubernetes.io/role/internal-elb" = "1"
+    Environment                       = var.environment
   }
 }
 
