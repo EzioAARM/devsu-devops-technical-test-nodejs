@@ -48,3 +48,8 @@ variable "github_branch" {
   type        = string
   default     = "main"
 }
+
+variable "image_repo_url" {
+  description = "The URL of the image repository"
+  type        = string
+}

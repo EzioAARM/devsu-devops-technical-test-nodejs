@@ -2,8 +2,20 @@ provider "aws" {
   region = "us-east-1"
 }
 
+provider "kubernetes" {
+  host                   = module.devsu["prod"].cluster_endpoint
+  cluster_ca_certificate = base64decode(module.devsu["prod"].cluster_ca_certificate)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.devsu["prod"].cluster_name]
+  }
+}
+
 resource "aws_s3_bucket" "build_bucket" {
-  bucket = "devsu-build-bucket-devops-technical-test"
+  bucket        = "devsu-build-bucket-devops-technical-test"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_ownership_controls" "build_bucket_ownership" {
@@ -66,4 +78,5 @@ module "pipelines" {
   codestar_connection_arn = aws_codestarconnections_connection.personal-github-connection.arn
   github_repository_id    = "EzioAARM/devsu-devops-technical-test-nodejs"
   github_branch           = each.value.branch
+  image_repo_url          = module.devsu[each.value.environment].ecr_repository_url
 }

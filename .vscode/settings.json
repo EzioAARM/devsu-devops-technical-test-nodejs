@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "*.yml": "helm",
+        "*.yaml": "helm"
+    },
+    "[helm]": {
+        "editor.formatOnSave": false,
+        "editor.formatOnPaste": false,
+        "editor.formatOnType": false
+    },
+    "prettier.disableLanguages": ["helm"],
+    "yaml.format.enable": false
+}

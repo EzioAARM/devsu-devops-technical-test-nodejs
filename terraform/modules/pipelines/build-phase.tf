@@ -41,7 +41,13 @@ data "aws_iam_policy_document" "build_phase_role_policy_document" {
       "ec2:DescribeSubnets",
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeVpcs",
-      "ec2:RunInstances"
+      "ec2:RunInstances",
+      "ecr:GetAuthorizationToken",
+      "ecr:InitiateLayerUpload",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:PutImage"
     ]
 
     resources = ["*"]
@@ -104,7 +110,8 @@ resource "aws_codebuild_project" "build_phase_project" {
   service_role  = aws_iam_role.build_phase_role.arn
 
   artifacts {
-    type = "CODEPIPELINE"
+    type     = "CODEPIPELINE"
+    location = "build-artifacts"
   }
 
   environment {
@@ -112,6 +119,20 @@ resource "aws_codebuild_project" "build_phase_project" {
     image                       = "aws/codebuild/standard:7.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
+    privileged_mode             = true
+
+    environment_variable {
+      name  = "IMAGE_REPO_URL"
+      value = var.image_repo_url
+    }
+    environment_variable {
+      name  = "IMAGE_TAG"
+      value = "latest"
+    }
+    environment_variable {
+      name  = "IMAGE_REPO_NAME"
+      value = "devsu-devops-technical-test-nodejs"
+    }
   }
 
   logs_config {
