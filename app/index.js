@@ -14,8 +14,11 @@ app.use(express.json());
 app.use("/api/users", usersRouter);
 app.use("/health", healthRouter);
 
-const server = app.listen(PORT, () => {
-    console.log("Server running on port PORT", PORT);
-});
+let server;
+if (process.env.NODE_ENV !== "test") {
+    server = app.listen(PORT, () => {
+        console.log("Server running on port PORT", PORT);
+    });
+}
 
 export { app, server };

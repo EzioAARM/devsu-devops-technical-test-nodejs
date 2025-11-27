@@ -1,0 +1,12 @@
+node_modules/
+coverage/
+dist/
+build/
+*.min.js
+.env
+.env.*
+*.log
+.git/
+.vscode/
+.idea/
+*.test.js

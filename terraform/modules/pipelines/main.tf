@@ -44,7 +44,14 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     effect = "Allow"
     actions = [
       "codebuild:BatchGetBuilds",
-      "codebuild:StartBuild"
+      "codebuild:StartBuild",
+      "codebuild:BatchGetReports",
+      "codebuild:BatchGetReportGroups",
+      "codebuild:CreateReportGroup",
+      "codebuild:CreateReport",
+      "codebuild:UpdateReport",
+      "codebuild:BatchPutTestCases",
+      "codebuild:BatchPutCodeCoverages"
     ]
     resources = ["*"]
   }
@@ -158,6 +165,24 @@ resource "aws_codepipeline" "codepipeline" {
         ConnectionArn    = var.codestar_connection_arn
         FullRepositoryId = var.github_repository_id
         BranchName       = var.github_branch
+      }
+    }
+  }
+
+  stage {
+    name = "CodeQuality"
+
+    action {
+      name             = "QualityGate"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["quality_output"]
+      version          = "1"
+
+      configuration = {
+        ProjectName = aws_codebuild_project.quality_gate_project.name
       }
     }
   }
