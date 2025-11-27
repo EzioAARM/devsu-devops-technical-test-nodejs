@@ -173,13 +173,12 @@ resource "aws_codepipeline" "codepipeline" {
     name = "CodeQuality"
 
     action {
-      name             = "QualityGate"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
-      output_artifacts = ["quality_output"]
-      version          = "1"
+      name            = "QualityGate"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      input_artifacts = ["source_output"]
+      version         = "1"
 
       configuration = {
         ProjectName = aws_codebuild_project.quality_gate_project.name
@@ -205,24 +204,20 @@ resource "aws_codepipeline" "codepipeline" {
     }
   }
 
-  /*   stage {
+  stage {
     name = "Deploy"
 
     action {
-      name            = "Deploy"
-      category        = "Deploy"
+      name            = "DeployToEKS"
+      category        = "Build"
       owner           = "AWS"
-      provider        = "CloudFormation"
+      provider        = "CodeBuild"
       input_artifacts = ["build_output"]
       version         = "1"
 
       configuration = {
-        ActionMode     = "REPLACE_ON_FAILURE"
-        Capabilities   = "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"
-        OutputFileName = "CreateStackOutput.json"
-        StackName      = "MyStack"
-        TemplatePath   = "build_output::sam-templated.yaml"
+        ProjectName = aws_codebuild_project.deploy_project.name
       }
     }
-  } */
+  }
 }

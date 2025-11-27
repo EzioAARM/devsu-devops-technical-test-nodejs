@@ -95,12 +95,123 @@ data "aws_iam_policy_document" "build_phase_role_policy_document" {
     ]
     resources = [var.codestar_connection_arn]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "codebuild:CreateReportGroup",
+      "codebuild:CreateReport",
+      "codebuild:UpdateReport",
+      "codebuild:BatchPutTestCases",
+      "codebuild:BatchPutCodeCoverages"
+    ]
+    resources = ["*"]
+  }
+}
+
+# Deploy role assume policy
+data "aws_iam_policy_document" "deploy_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["codebuild.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+# Deploy role
+resource "aws_iam_role" "deploy_role" {
+  name               = "deploy_role-${var.environment}"
+  assume_role_policy = data.aws_iam_policy_document.deploy_assume_role.json
+}
+
+# Deploy role policy
+data "aws_iam_policy_document" "deploy_role_policy_document" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeDhcpOptions",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeVpcs",
+      "ec2:CreateNetworkInterfacePermission"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "eks:DescribeCluster",
+      "eks:ListClusters",
+      "eks:DescribeNodegroup",
+      "eks:ListNodegroups",
+      "eks:DescribeUpdate",
+      "eks:ListUpdates"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion"
+    ]
+    resources = [
+      var.build_bucket_arn,
+      "${var.build_bucket_arn}/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "codeconnections:GetConnectionToken",
+      "codeconnections:GetConnection"
+    ]
+    resources = [var.codestar_connection_arn]
+  }
 }
 
 resource "aws_iam_role_policy" "build_phase_role_policy" {
   name   = "build_phase_role_policy-${var.environment}"
   role   = aws_iam_role.build_phase_role.id
   policy = data.aws_iam_policy_document.build_phase_role_policy_document.json
+}
+
+resource "aws_iam_role_policy" "deploy_role_policy" {
+  name   = "deploy_role_policy-${var.environment}"
+  role   = aws_iam_role.deploy_role.id
+  policy = data.aws_iam_policy_document.deploy_role_policy_document.json
 }
 
 resource "aws_codebuild_project" "build_phase_project" {
@@ -202,6 +313,71 @@ resource "aws_codebuild_project" "quality_gate_project" {
   source {
     type      = "CODEPIPELINE"
     buildspec = "app/quality-buildspec.yaml"
+  }
+
+  vpc_config {
+    vpc_id = var.vpc_id
+
+    subnets = [
+      var.build_subnet_id
+    ]
+
+    security_group_ids = [
+      var.build_sg_id
+    ]
+  }
+
+  tags = {
+    Environment = var.environment
+  }
+}
+
+# Deploy CodeBuild Project
+resource "aws_codebuild_project" "deploy_project" {
+  name          = "deploy-project-${var.environment}"
+  description   = "Deploy project for ${var.environment} environment"
+  build_timeout = 15
+  service_role  = aws_iam_role.deploy_role.arn
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = "aws/codebuild/standard:7.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+
+    environment_variable {
+      name  = "EKS_CLUSTER_NAME"
+      value = var.eks_cluster_name
+    }
+    environment_variable {
+      name  = "IMAGE_REPO_URL"
+      value = var.image_repo_url
+    }
+    environment_variable {
+      name  = "ENVIRONMENT"
+      value = var.environment
+    }
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "deploy-logs-${var.environment}"
+      stream_name = "log-stream-${var.environment}"
+    }
+
+    s3_logs {
+      status   = "ENABLED"
+      location = "${var.build_bucket_arn}/deploy-log"
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "app/deploy-buildspec.yaml"
   }
 
   vpc_config {

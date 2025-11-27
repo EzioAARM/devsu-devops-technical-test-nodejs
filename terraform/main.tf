@@ -78,5 +78,8 @@ module "pipelines" {
   codestar_connection_arn = aws_codestarconnections_connection.personal-github-connection.arn
   github_repository_id    = "EzioAARM/devsu-devops-technical-test-nodejs"
   github_branch           = each.value.branch
-  image_repo_url          = module.devsu[each.value.environment].ecr_repository_url
+  image_repo_url              = module.devsu[each.value.environment].ecr_repository_url
+  eks_cluster_name            = module.devsu[each.value.environment].cluster_name
+  eks_cluster_endpoint        = module.devsu[each.value.environment].cluster_endpoint
+  eks_cluster_ca_certificate  = module.devsu[each.value.environment].cluster_ca_certificate
 }
