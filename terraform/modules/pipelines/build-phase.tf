@@ -168,3 +168,55 @@ resource "aws_codebuild_project" "build_phase_project" {
     Environment = var.environment
   }
 }
+
+# Quality Gate CodeBuild Project
+resource "aws_codebuild_project" "quality_gate_project" {
+  name          = "quality-gate-${var.environment}"
+  description   = "Quality gate project for ${var.environment} environment"
+  build_timeout = 10
+  service_role  = aws_iam_role.build_phase_role.arn
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = "aws/codebuild/standard:7.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "quality-gate-logs-${var.environment}"
+      stream_name = "log-stream-${var.environment}"
+    }
+
+    s3_logs {
+      status   = "ENABLED"
+      location = "${var.build_bucket_arn}/quality-gate-log"
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "app/quality-buildspec.yaml"
+  }
+
+  vpc_config {
+    vpc_id = var.vpc_id
+
+    subnets = [
+      var.build_subnet_id
+    ]
+
+    security_group_ids = [
+      var.build_sg_id
+    ]
+  }
+
+  tags = {
+    Environment = var.environment
+  }
+}

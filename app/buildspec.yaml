@@ -7,12 +7,16 @@ phases:
         commands:
             - cd app
             - echo Installing source NPM dependencies...
-            - npm install
+            - npm ci
     pre_build:
         commands:
             - echo Pre-build started on `date`
-            - echo Running tests...
-            - npm run test
+            - echo Running static code analysis...
+            - npm run lint || echo "Lint issues found - continuing build"
+            - echo Running tests with coverage...
+            - npm run test:coverage
+            - echo Checking coverage thresholds...
+            - node -e "const coverage = require('./coverage/coverage-summary.json'); const { lines, functions, branches, statements } = coverage.total; const threshold = 70; if (lines.pct < threshold || functions.pct < threshold || branches.pct < threshold || statements.pct < threshold) { console.error('Coverage below threshold!'); process.exit(1); }"
     build:
         commands:
             - echo Build started on `date`
@@ -29,4 +33,26 @@ phases:
             - printf '[{"name":"%s","imageUri":"%s"}]' "$IMAGE_REPO_NAME" "$IMAGE_REPO_URL:$IMAGE_TAG" > imagedefinitions.json
 
 artifacts:
-    files: imagedefinitions.json
+    files: 
+        - imagedefinitions.json
+    secondary-artifacts:
+        coverage-reports:
+            files:
+                - app/coverage/**/*
+            name: coverage-reports
+        lint-reports:
+            files:
+                - app/eslint-report.*
+            name: lint-reports
+
+reports:
+    coverage-report:
+        files:
+            - app/coverage/cobertura-coverage.xml
+        file-format: 'COBERTURAXML'
+        name: 'coverage-report'
+    test-report:
+        files:
+            - app/coverage/junit.xml
+        file-format: 'JUNITXML'
+        name: 'test-report'

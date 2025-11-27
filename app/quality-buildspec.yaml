@@ -1,0 +1,44 @@
+version: 0.2
+
+phases:
+    install:
+        runtime-versions:
+            nodejs: 18
+        commands:
+            - cd app
+            - echo Installing dependencies for quality checks...
+            - npm ci
+    pre_build:
+        commands:
+            - echo Starting code quality analysis...
+    build:
+        commands:
+            - echo Running ESLint static analysis...
+            - npm run lint || echo "ESLint issues found"
+            - echo Running tests with coverage...
+            - npm run test:coverage
+            - echo Generating quality reports...
+            - echo "Quality gate analysis completed"
+    post_build:
+        commands:
+            - echo Quality gate checks completed
+            - echo "Coverage summary:"
+            - cat coverage/coverage-summary.json | node -e "const data=JSON.parse(require('fs').readFileSync('/dev/stdin')); console.log('Lines:', data.total.lines.pct+'%', 'Functions:', data.total.functions.pct+'%', 'Branches:', data.total.branches.pct+'%', 'Statements:', data.total.statements.pct+'%')"
+
+artifacts:
+    files:
+        - coverage/**/*
+        - eslint-report.*
+    name: quality-gate-artifacts
+
+reports:
+    coverage-report:
+        files:
+            - coverage/cobertura-coverage.xml
+        file-format: 'COBERTURAXML'
+        name: 'code-coverage'
+    test-results:
+        files:
+            - coverage/junit.xml
+        file-format: 'JUNITXML'
+        name: 'unit-tests'
