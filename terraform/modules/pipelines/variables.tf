@@ -53,3 +53,18 @@ variable "image_repo_url" {
   description = "The URL of the image repository"
   type        = string
 }
+
+variable "eks_cluster_name" {
+  description = "The name of the EKS cluster for deployment"
+  type        = string
+}
+
+variable "eks_cluster_endpoint" {
+  description = "The endpoint of the EKS cluster"
+  type        = string
+}
+
+variable "eks_cluster_ca_certificate" {
+  description = "The CA certificate of the EKS cluster"
+  type        = string
+}

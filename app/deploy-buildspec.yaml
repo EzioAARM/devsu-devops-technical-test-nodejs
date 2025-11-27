@@ -1,0 +1,47 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon EKS...
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $EKS_CLUSTER_NAME
+      - echo Installing kubectl...
+      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/
+      - echo Installing Helm...
+      - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - echo Verifying cluster access...
+      - kubectl get nodes
+      
+  build:
+    commands:
+      - echo Starting deployment on `date`
+      - cd kubernetes
+      - echo Upgrading or installing Helm chart...
+      - |
+        helm upgrade --install devsu-app . \
+          --namespace devsu-$ENVIRONMENT \
+          --create-namespace \
+          --set image.repository=$IMAGE_REPO_URL \
+          --set image.tag=latest \
+          --set environment=$ENVIRONMENT \
+          --wait \
+          --timeout=10m
+      - echo Checking deployment status...
+      - kubectl get deployments -n devsu-$ENVIRONMENT
+      - kubectl get pods -n devsu-$ENVIRONMENT
+      - kubectl get services -n devsu-$ENVIRONMENT
+      - kubectl get ingress -n devsu-$ENVIRONMENT
+      
+  post_build:
+    commands:
+      - echo Deployment completed on `date`
+      - echo Getting application endpoint...
+      - |
+        INGRESS_HOST=$(kubectl get ingress devsu-app-ingress -n devsu-$ENVIRONMENT -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || echo "Ingress not ready")
+        echo "Application should be available at: http://$INGRESS_HOST"
+        
+artifacts:
+  files:
+    - '**/*'
