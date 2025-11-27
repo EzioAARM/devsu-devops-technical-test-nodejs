@@ -377,6 +377,30 @@ resource "aws_codebuild_project" "deploy_project" {
       name  = "ENVIRONMENT"
       value = var.environment
     }
+    environment_variable {
+      name  = "NODE_ENV"
+      value = "production"
+    }
+    environment_variable {
+      name  = "REPLICA_COUNT"
+      value = "2"
+    }
+    environment_variable {
+      name  = "CONTAINER_PORT"
+      value = "8000"
+    }
+    environment_variable {
+      name  = "DATABASE_NAME"
+      value = "devsu_db"
+    }
+    environment_variable {
+      name  = "DATABASE_USER"
+      value = "admin"
+    }
+    environment_variable {
+      name  = "DATABASE_PASSWORD"
+      value = "password123"
+    }
   }
 
   logs_config {
