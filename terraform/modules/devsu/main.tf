@@ -41,6 +41,11 @@ resource "aws_eks_cluster" "eks_cluster" {
     subnet_ids = var.subnets
   }
 
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
   depends_on = [aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy]
 }
 
@@ -409,19 +414,4 @@ resource "aws_iam_role_policy_attachment" "alb_attach" {
   policy_arn = aws_iam_policy.alb_policy.arn
 }
 
-resource "kubernetes_service_account" "alb_sa" {
-  metadata {
-    name      = "aws-load-balancer-controller-${var.project_name}"
-    namespace = "kube-system"
-
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.alb_role.arn
-    }
-  }
-
-  depends_on = [
-    aws_eks_cluster.eks_cluster,
-    aws_eks_node_group.eks_node_group,
-    aws_iam_openid_connect_provider.oidc_provider
-  ]
-}
+# Note: ALB controller and service account will be installed via Helm in the deployment pipeline

@@ -200,6 +200,22 @@ data "aws_iam_policy_document" "deploy_role_policy_document" {
     ]
     resources = [var.codestar_connection_arn]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "sts:AssumeRole"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "eks:AccessKubernetesApi"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "build_phase_role_policy" {
@@ -360,6 +376,30 @@ resource "aws_codebuild_project" "deploy_project" {
     environment_variable {
       name  = "ENVIRONMENT"
       value = var.environment
+    }
+    environment_variable {
+      name  = "NODE_ENV"
+      value = "production"
+    }
+    environment_variable {
+      name  = "REPLICA_COUNT"
+      value = "2"
+    }
+    environment_variable {
+      name  = "CONTAINER_PORT"
+      value = "8000"
+    }
+    environment_variable {
+      name  = "DATABASE_NAME"
+      value = "devsu_db"
+    }
+    environment_variable {
+      name  = "DATABASE_USER"
+      value = "admin"
+    }
+    environment_variable {
+      name  = "DATABASE_PASSWORD"
+      value = "password123"
     }
   }
 

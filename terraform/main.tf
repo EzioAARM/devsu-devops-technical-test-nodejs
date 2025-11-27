@@ -2,17 +2,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-provider "kubernetes" {
-  host                   = module.devsu["prod"].cluster_endpoint
-  cluster_ca_certificate = base64decode(module.devsu["prod"].cluster_ca_certificate)
-
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    command     = "aws"
-    args        = ["eks", "get-token", "--cluster-name", module.devsu["prod"].cluster_name]
-  }
-}
-
 resource "aws_s3_bucket" "build_bucket" {
   bucket        = "devsu-build-bucket-devops-technical-test"
   force_destroy = true
@@ -82,4 +71,25 @@ module "pipelines" {
   eks_cluster_name           = module.devsu[each.value.environment].cluster_name
   eks_cluster_endpoint       = module.devsu[each.value.environment].cluster_endpoint
   eks_cluster_ca_certificate = module.devsu[each.value.environment].cluster_ca_certificate
+}
+
+# EKS Access Entry for Deploy Role
+resource "aws_eks_access_entry" "deploy_role_access" {
+  for_each      = local.environments
+  cluster_name  = module.devsu[each.value.environment].cluster_name
+  principal_arn = module.pipelines[each.value.environment].deploy_role_arn
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "deploy_role_policy" {
+  for_each      = local.environments
+  cluster_name  = module.devsu[each.value.environment].cluster_name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = module.pipelines[each.value.environment].deploy_role_arn
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.deploy_role_access]
 }
