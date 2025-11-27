@@ -73,7 +73,6 @@ module "pipelines" {
   eks_cluster_ca_certificate = module.devsu[each.value.environment].cluster_ca_certificate
 }
 
-# EKS Access Entry for Deploy Role
 resource "aws_eks_access_entry" "deploy_role_access" {
   for_each      = local.environments
   cluster_name  = module.devsu[each.value.environment].cluster_name
