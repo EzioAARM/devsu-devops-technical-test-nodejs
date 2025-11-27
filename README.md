@@ -4,31 +4,7 @@ A comprehensive DevOps solution featuring a Node.js REST API with automated CI/C
 
 ## 🏗️ Architecture Overview
 
-```mermaid
-graph TB
-    A[Developer Push] --> B[GitHub Repository]
-    B --> C[CodePipeline Trigger]
-    C --> D[CodeBuild - Build & Test]
-    D --> E[Docker Image Build]
-    E --> F[ECR Push]
-    F --> G[EKS Deployment]
-    G --> H[ALB Load Balancer]
-    H --> I[Application Pods]
-
-    subgraph "AWS Infrastructure"
-        J[VPC] --> K[Public/Private Subnets]
-        K --> L[NAT Gateway]
-        K --> M[Internet Gateway]
-        N[EKS Cluster] --> O[Node Groups]
-        P[ALB Controller] --> Q[Application Load Balancer]
-    end
-
-    subgraph "Monitoring & Scaling"
-        R[HPA - Horizontal Pod Autoscaler]
-        S[Health Checks]
-        T[CloudWatch Logs]
-    end
-```
+[![Architecture Diagram](docs/diagrams/aws-infrastructure-diagram.png)](docs/diagrams/aws-infrastructure-diagram.png)
 
 ## 📁 Project Structure
 
@@ -226,26 +202,39 @@ The automated pipeline includes:
 -   Triggers on push to `main` branch
 -   Pulls code from GitHub via CodeStar connection
 
-### 2. Build Stage
+### 2. Quality Gate Stage
+
+-   **ESLint Static Analysis**: Code quality and style validation
+-   **Jest Unit Tests**: Comprehensive test execution with coverage reporting
+-   **Coverage Requirements**: Must achieve >75% coverage for:
+    -   Line coverage
+    -   Function coverage
+    -   Branch coverage
+    -   Statement coverage
+-   **Quality Gates**: Pipeline fails if any quality metric is not met
+
+### 3. Build Stage
 
 -   Installs Node.js dependencies
--   Runs unit tests
 -   Builds Docker image
 -   Pushes to ECR
 -   Generates deployment artifacts
 
-### 3. Deploy Stage (Manual trigger recommended)
+### 4. Deploy Stage
 
--   Updates Kubernetes deployment
+-   Updates EKS cluster with latest image
 -   Performs rolling updates with zero downtime
+-   Uses Helm for deployment management
 
 ### Pipeline Configuration
 
 The pipeline is configured to:
 
--   ✅ Run automated tests
+-   ✅ Run automated code quality checks (ESLint)
+-   ✅ Execute comprehensive test suite with coverage validation
 -   ✅ Build and push container images
 -   ✅ Generate deployment artifacts
+-   ✅ Deploy to EKS with proper authentication
 -   ✅ Support multiple environments
 
 ## 📊 Monitoring and Scaling
@@ -374,25 +363,24 @@ kubectl describe pod <pod-name>
 kubectl describe ingress <ingress-name>
 ```
 
-## 📚 Additional Resources
+## 📸 Screenshots
 
--   [AWS EKS Documentation](https://docs.aws.amazon.com/eks/)
--   [Helm Documentation](https://helm.sh/docs/)
--   [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
--   [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/)
+### VPC Configuration
 
-## 🤝 Contributing
+![VPC Configuration](docs/screenshots/vpc.png)
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests: `npm test`
-5. Create a pull request
+### EKS Cluster Services
 
-## 📄 License
+![EKS Deployments](docs/screenshots/eks-deployments.png)
 
-This project is licensed under the MIT License.
+![EKS Ingress](docs/screenshots/eks-ingress.png)
 
----
+![EKS Ingress](docs/screenshots/eks-ingress-details.png)
 
-**Note**: This is a technical test project demonstrating DevOps best practices including Infrastructure as Code, containerization, orchestration, and automated CI/CD pipelines.
+### CodePipeline Stages
+
+![CodePipeline Stages](docs/screenshots/pipeline-execution.png)
+
+### Load Balancer
+
+![Load Balancer](docs/screenshots/load-balancers.png)

@@ -109,7 +109,6 @@ data "aws_iam_policy_document" "build_phase_role_policy_document" {
   }
 }
 
-# Deploy role assume policy
 data "aws_iam_policy_document" "deploy_assume_role" {
   statement {
     effect = "Allow"
@@ -123,13 +122,11 @@ data "aws_iam_policy_document" "deploy_assume_role" {
   }
 }
 
-# Deploy role
 resource "aws_iam_role" "deploy_role" {
   name               = "deploy_role-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.deploy_assume_role.json
 }
 
-# Deploy role policy
 data "aws_iam_policy_document" "deploy_role_policy_document" {
   statement {
     effect = "Allow"
@@ -296,7 +293,6 @@ resource "aws_codebuild_project" "build_phase_project" {
   }
 }
 
-# Quality Gate CodeBuild Project
 resource "aws_codebuild_project" "quality_gate_project" {
   name          = "quality-gate-${var.environment}"
   description   = "Quality gate project for ${var.environment} environment"
@@ -348,7 +344,6 @@ resource "aws_codebuild_project" "quality_gate_project" {
   }
 }
 
-# Deploy CodeBuild Project
 resource "aws_codebuild_project" "deploy_project" {
   name          = "deploy-project-${var.environment}"
   description   = "Deploy project for ${var.environment} environment"
