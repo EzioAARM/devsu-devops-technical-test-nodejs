@@ -34,7 +34,9 @@ phases:
 
 artifacts:
     files: 
-        - imagedefinitions.json
+        - '**/*'
+    exclude-paths:
+        - terraform/**/*
     secondary-artifacts:
         coverage-reports:
             files:
