@@ -95,6 +95,18 @@ data "aws_iam_policy_document" "build_phase_role_policy_document" {
     ]
     resources = [var.codestar_connection_arn]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "codebuild:CreateReportGroup",
+      "codebuild:CreateReport",
+      "codebuild:UpdateReport",
+      "codebuild:BatchPutTestCases",
+      "codebuild:BatchPutCodeCoverages"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "build_phase_role_policy" {

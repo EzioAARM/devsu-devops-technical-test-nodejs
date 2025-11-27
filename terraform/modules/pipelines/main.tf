@@ -173,13 +173,12 @@ resource "aws_codepipeline" "codepipeline" {
     name = "CodeQuality"
 
     action {
-      name             = "QualityGate"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
-      output_artifacts = ["quality_output"]
-      version          = "1"
+      name            = "QualityGate"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      input_artifacts = ["source_output"]
+      version         = "1"
 
       configuration = {
         ProjectName = aws_codebuild_project.quality_gate_project.name
