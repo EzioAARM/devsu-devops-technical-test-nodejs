@@ -68,18 +68,18 @@ module "pipelines" {
   source   = "./modules/pipelines"
   for_each = local.environments
 
-  vpc_id                  = module.network[each.value.environment].vpc_id
-  build_subnet_id         = module.network[each.value.environment].build_subnet_id
-  build_subnet_arn        = module.network[each.value.environment].build_subnet_arn
-  build_sg_id             = module.network[each.value.environment].build_sg_id
-  build_bucket_name       = aws_s3_bucket.build_bucket.bucket
-  build_bucket_arn        = aws_s3_bucket.build_bucket.arn
-  environment             = each.value.environment
-  codestar_connection_arn = aws_codestarconnections_connection.personal-github-connection.arn
-  github_repository_id    = "EzioAARM/devsu-devops-technical-test-nodejs"
-  github_branch           = each.value.branch
-  image_repo_url              = module.devsu[each.value.environment].ecr_repository_url
-  eks_cluster_name            = module.devsu[each.value.environment].cluster_name
-  eks_cluster_endpoint        = module.devsu[each.value.environment].cluster_endpoint
-  eks_cluster_ca_certificate  = module.devsu[each.value.environment].cluster_ca_certificate
+  vpc_id                     = module.network[each.value.environment].vpc_id
+  build_subnet_id            = module.network[each.value.environment].build_subnet_id
+  build_subnet_arn           = module.network[each.value.environment].build_subnet_arn
+  build_sg_id                = module.network[each.value.environment].build_sg_id
+  build_bucket_name          = aws_s3_bucket.build_bucket.bucket
+  build_bucket_arn           = aws_s3_bucket.build_bucket.arn
+  environment                = each.value.environment
+  codestar_connection_arn    = aws_codestarconnections_connection.personal-github-connection.arn
+  github_repository_id       = "EzioAARM/devsu-devops-technical-test-nodejs"
+  github_branch              = each.value.branch
+  image_repo_url             = module.devsu[each.value.environment].ecr_repository_url
+  eks_cluster_name           = module.devsu[each.value.environment].cluster_name
+  eks_cluster_endpoint       = module.devsu[each.value.environment].cluster_endpoint
+  eks_cluster_ca_certificate = module.devsu[each.value.environment].cluster_ca_certificate
 }
